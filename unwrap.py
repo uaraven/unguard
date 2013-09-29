@@ -1,7 +1,7 @@
 def read_and_unwrap(input):
     '''Reads input file and concatenates wrapped lines. Lines are concatenated if next line starts with space or tab
 
-    input is a file-like object
+    input - a file-like object
     '''
     accumulator = ''
     ln = input.readline()

@@ -5,6 +5,10 @@ METHODS = 'methods'
 
 
 class ProguardMap(object):
+    """
+    This class holds mapping between obfuscated and unobfuscated names.
+    Data is read from ProGuard mapping file
+    """
     JAVA_ID = r'[a-zA-Z_][a-zA-Z0-9_\$]*'
 
     CLASS_MAPPING = re.compile(r'^((%s)(\.%s)*) -> ((%s)(\.%s)*):$' % (JAVA_ID, JAVA_ID, JAVA_ID, JAVA_ID))
@@ -14,16 +18,18 @@ class ProguardMap(object):
     SOURCE_LINE_INFO = re.compile(r'Source File:(\d+)')
 
     def __init__(self, map_file_name, verbose=False):
+        """
+        Read ProGuard mapping file and create in-memory mapping between obfuscated and non-obfuscated names
+
+        Parameters:
+            map_file_name - name of mapping file
+            verbose - if True, write lot of text to standard output
+        """
         self.verbose = verbose
         self.mapping = self.__read_proguard_mapping(map_file_name)
 
-    def find_class(self, obfuscated_name):
-        if obfuscated_name in self.mapping:
-            return self.mapping[obfuscated_name]
-        else:
-            return None
-
     def deobfuscate_line(self, line):
+        """ Tries to find and replace all the references to obfuscated names in a text string """
         mi = self.OBFUSCATED_METHOD_REFERENCE.finditer(line.strip())
         for m in mi:
             line = self.__process_method(line, m)
@@ -31,6 +37,12 @@ class ProguardMap(object):
         for m in mi:
             line = self.__process_class(line, m)
         return line
+
+    def __find_class(self, obfuscated_name):
+        if obfuscated_name in self.mapping:
+            return self.mapping[obfuscated_name]
+        else:
+            return None
 
     def __process_method(self, line, match):
         result = line
@@ -78,13 +90,11 @@ class ProguardMap(object):
             obfuscated_name = matcher.group(4)
             if method_name != obfuscated_name:
                 if self.verbose:
-                    print
-                    '%s: %s -> %s (%d, %d)' % (result[CLASS], obfuscated_name, method_name, start_line, end_line)
+                    print '%s: %s -> %s (%d, %d)' % (result[CLASS], obfuscated_name, method_name, start_line, end_line)
                 result[METHODS][(obfuscated_name, start_line, end_line)] = method_name
             else:
                 if self.verbose:
-                    print
-                    'Method', method_name, 'is not obfuscated'
+                    print 'Method', method_name, 'is not obfuscated'
 
     def __read_class_mapping(self, map_file, class_map, result):
         matcher = self.CLASS_MAPPING.match(class_map.strip())
@@ -92,8 +102,7 @@ class ProguardMap(object):
             class_name = matcher.group(1)
             obfuscated_name = matcher.group(4)
             if self.verbose:
-                print
-                'Class', obfuscated_name, '->', class_name
+                print 'Class', obfuscated_name, '->', class_name
             result[obfuscated_name] = {CLASS: class_name, METHODS: {}}
             ln = map_file.readline()
             while ln != '':
@@ -103,8 +112,7 @@ class ProguardMap(object):
                 else:
                     if len(result[obfuscated_name][METHODS]) == 0 and obfuscated_name == class_name:
                         if self.verbose:
-                            print
-                            'Class', class_name, 'is not obfuscated, removing from mapping'
+                            print 'Class', class_name, 'is not obfuscated, removing from mapping'
                         del result[obfuscated_name]
                     return ln
         else:
@@ -113,8 +121,7 @@ class ProguardMap(object):
     def __read_proguard_mapping(self, file_name):
         result = {}
         if self.verbose:
-            print
-            'Reading mapping from', file_name
+            print 'Reading mapping from', file_name
         with open(file_name) as map_file:
             ln = map_file.readline()
             while ln != '' and ln is not None:
@@ -123,7 +130,6 @@ class ProguardMap(object):
                     ln = map_file.readline()
 
         if self.verbose:
-            print
-            len(result), 'class definitions loaded'
+            print len(result), 'class definitions loaded'
         return result
 

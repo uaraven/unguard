@@ -5,7 +5,7 @@ from mapper import ProguardMap
 from unwrap import read_and_unwrap
 
 
-def prepare_argparser():
+def prepare_arg_parser():
     parser = argparse.ArgumentParser(usage='%(prog)s [options] input_file')
     parser.add_argument('-o', '--output', type=argparse.FileType('w'), default=sys.stdout, dest='output',
                         help='output file. If omitted, standard output will be used')
@@ -20,7 +20,7 @@ def prepare_argparser():
 
 
 def main():
-    args = prepare_argparser()
+    args = prepare_arg_parser()
     mapper = ProguardMap(args.map_file, args.verbose)
     for line in read_and_unwrap(args.infile):
         args.output.write(mapper.deobfuscate_line(line) + '\n')
