@@ -15,7 +15,7 @@ class ProguardMap(object):
     METHOD_MAPPING = re.compile(r'^(\d+):(\d+):.* (%s)\(.*\) -> (%s)$' % (JAVA_ID, JAVA_ID))
     OBFUSCATED_METHOD_REFERENCE = re.compile(r'((%s(\.%s)+)\.(%s))\((.*)\)' % (JAVA_ID, JAVA_ID, JAVA_ID))
     OBFUSCATED_CLASS_REFERENCE = re.compile(r'%s(\.%s)+' % (JAVA_ID, JAVA_ID))
-    SOURCE_LINE_INFO = re.compile(r'Source File:(\d+)')
+    SOURCE_LINE_INFO = re.compile(r'SourceFile:(\d+)')
 
     def __init__(self, map_file_name, verbose=False):
         """
